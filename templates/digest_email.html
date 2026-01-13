@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News Digest - {{ digest.date.strftime('%B %d, %Y') }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #1a1a2e;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .header {
+            border-bottom: 2px solid #4361ee;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            color: #4361ee;
+            margin: 0 0 8px 0;
+            font-size: 28px;
+        }
+        .date {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #495057;
+        }
+        .stat {
+            background: #f1f3f4;
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+        .top-signal {
+            background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 28px;
+        }
+        .top-signal h2 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+        .top-signal h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+        .top-signal p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        .section {
+            margin-bottom: 32px;
+        }
+        .section h2 {
+            color: #212529;
+            font-size: 18px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+        .section h2 .icon {
+            margin-right: 8px;
+        }
+        .item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        .item:last-child {
+            border-bottom: none;
+        }
+        .item-title {
+            font-weight: 600;
+            color: #212529;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .item-title:hover {
+            color: #4361ee;
+        }
+        .item-meta {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 6px;
+        }
+        .item-summary {
+            font-size: 14px;
+            color: #495057;
+        }
+        .item-signals {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .relevance-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .relevance-high { background: #d4edda; color: #155724; }
+        .relevance-medium { background: #fff3cd; color: #856404; }
+        .type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .type-article { background: #e7f1ff; color: #0056b3; }
+        .type-podcast { background: #f3e5f5; color: #7b1fa2; }
+        .type-video { background: #ffebee; color: #c62828; }
+        .deep-dive {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .deep-dive .duration {
+            color: #6c757d;
+            font-size: 13px;
+        }
+        .conferences {
+            background: #fff8e1;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        .conference-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #ffe082;
+        }
+        .conference-item:last-child {
+            border-bottom: none;
+        }
+        .conference-date {
+            font-weight: 600;
+            color: #f57c00;
+        }
+        .footer {
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .footer a {
+            color: #4361ee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI News Digest</h1>
+            <div class="date">{{ digest.date.strftime('%A, %B %d, %Y') }}</div>
+            <div class="stats">
+                <span class="stat">{{ digest.counts.articles }} articles</span>
+                <span class="stat">{{ digest.counts.podcasts }} podcasts</span>
+                <span class="stat">{{ digest.counts.videos }} videos</span>
+            </div>
+        </div>
+
+        {% if digest.top_signal %}
+        <div class="top-signal">
+            <h2>Top Signal</h2>
+            <h3>{{ digest.top_signal.title }}</h3>
+            <p>{{ digest.top_signal.summary[:300] }}{% if digest.top_signal.summary|length > 300 %}...{% endif %}</p>
+        </div>
+        {% endif %}
+
+        {% if digest.sections.investment_signals %}
+        <div class="section">
+            <h2><span class="icon">💰</span>Investment Signals</h2>
+            {% for item in digest.sections.investment_signals %}
+            <div class="item">
+                <a href="{{ item.source_url }}" class="item-title">{{ item.title }}</a>
+                <div class="item-meta">
+                    <span class="type-badge type-{{ item.content_type.value }}">{{ item.content_type.value }}</span>
+                    {{ item.source_name }} · {{ item.publish_date.strftime('%b %d') }}
+                </div>
+                <div class="item-summary">{{ item.summary[:200] if item.summary else '' }}{% if item.summary and item.summary|length > 200 %}...{% endif %}</div>
+                {% if item.investment_signals and item.investment_signals.relevance_score %}
+                <div class="item-signals">
+                    <span class="relevance-badge {% if item.investment_signals.relevance_score >= 8 %}relevance-high{% else %}relevance-medium{% endif %}">
+                        Relevance: {{ item.investment_signals.relevance_score }}/10
+                    </span>
+                    {{ item.investment_signals.rationale[:150] if item.investment_signals.rationale else '' }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if digest.sections.market_intelligence %}
+        <div class="section">
+            <h2><span class="icon">📊</span>Market Intelligence</h2>
+            {% for item in digest.sections.market_intelligence %}
+            <div class="item">
+                <a href="{{ item.source_url }}" class="item-title">{{ item.title }}</a>
+                <div class="item-meta">
+                    <span class="type-badge type-{{ item.content_type.value }}">{{ item.content_type.value }}</span>
+                    {{ item.source_name }} · {{ item.publish_date.strftime('%b %d') }}
+                </div>
+                <div class="item-summary">{{ item.summary[:200] if item.summary else '' }}{% if item.summary and item.summary|length > 200 %}...{% endif %}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if digest.sections.technical %}
+        <div class="section">
+            <h2><span class="icon">🔬</span>Technical Developments</h2>
+            {% for item in digest.sections.technical %}
+            <div class="item">
+                <a href="{{ item.source_url }}" class="item-title">{{ item.title }}</a>
+                <div class="item-meta">
+                    <span class="type-badge type-{{ item.content_type.value }}">{{ item.content_type.value }}</span>
+                    {{ item.source_name }} · {{ item.publish_date.strftime('%b %d') }}
+                </div>
+                <div class="item-summary">{{ item.summary[:200] if item.summary else '' }}{% if item.summary and item.summary|length > 200 %}...{% endif %}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if digest.sections.deep_dives %}
+        <div class="section">
+            <h2><span class="icon">🎯</span>Must Watch/Listen</h2>
+            {% for item in digest.sections.deep_dives %}
+            <div class="deep-dive">
+                <a href="{{ item.source_url }}" class="item-title">{{ item.title }}</a>
+                <div class="item-meta">
+                    <span class="type-badge type-{{ item.content_type.value }}">{{ item.content_type.value }}</span>
+                    {{ item.source_name }}
+                    {% if item.duration_seconds %}
+                    <span class="duration">· {{ format_duration(item.duration_seconds) }}</span>
+                    {% endif %}
+                </div>
+                <div class="item-summary">{{ item.summary if item.summary else '' }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if digest.conferences %}
+        <div class="section">
+            <h2><span class="icon">📅</span>This Quarter's Calendar</h2>
+            <div class="conferences">
+                {% for conf in digest.conferences %}
+                <div class="conference-item">
+                    <span class="conference-date">{{ conf.start_date.strftime('%b %d') }}</span>
+                    <strong>{{ conf.name }}</strong>
+                    {% if conf.location %}<span> · {{ conf.location }}</span>{% endif %}
+                    {% if conf.registration_deadline %}
+                    <br><small>Registration deadline: {{ conf.registration_deadline.strftime('%b %d') }}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>
+                <a href="#">View Archive</a> · 
+                <a href="#">Update Preferences</a> · 
+                <a href="#">Unsubscribe</a>
+            </p>
+            <p>AI News Digest for Enterprise AI Investment</p>
+        </div>
+    </div>
+</body>
+</html>
