@@ -1,4 +1,3 @@
-import os
 import tempfile
 from pathlib import Path
 from typing import Optional
@@ -8,6 +7,11 @@ import structlog
 
 logger = structlog.get_logger()
 
+try:
+    import whisper
+except ImportError:
+    whisper = None
+
 
 class AudioTranscriber:
     def __init__(self, model_size: str = "base"):
@@ -16,12 +20,12 @@ class AudioTranscriber:
         self._load_model()
 
     def _load_model(self):
+        if not whisper:
+            logger.warning("whisper_not_installed")
+            return
         try:
-            import whisper
             self.model = whisper.load_model(self.model_size)
             logger.info("whisper_model_loaded", model_size=self.model_size)
-        except ImportError:
-            logger.warning("whisper_not_installed")
         except Exception as e:
             logger.error("whisper_load_failed", error=str(e))
 
@@ -74,7 +78,11 @@ class AudioTranscriber:
     def transcribe_youtube(self, video_id: str) -> Optional[dict]:
         try:
             import yt_dlp
+        except ImportError:
+            logger.error("yt_dlp_not_installed")
+            return None
 
+        try:
             with tempfile.TemporaryDirectory() as tmpdir:
                 output_path = Path(tmpdir) / "audio"
                 ydl_opts = {
@@ -103,9 +111,6 @@ class AudioTranscriber:
                 logger.error("audio_file_not_found", video_id=video_id)
                 return None
 
-        except ImportError:
-            logger.error("yt_dlp_not_installed")
-            return None
         except Exception as e:
             logger.error("youtube_transcribe_failed", video_id=video_id, error=str(e))
             return None

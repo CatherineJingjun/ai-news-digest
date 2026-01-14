@@ -1,13 +1,24 @@
+import json
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Optional
 
 import structlog
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from pathlib import Path
 
 from src.storage import Category, Content, ContentType, Digest, SessionLocal, Conference
 
 logger = structlog.get_logger()
+
+
+def _parse_json(value: Optional[str], default=None):
+    """Parse JSON string, return default if None or invalid."""
+    if not value:
+        return default if default is not None else {}
+    try:
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return default if default is not None else {}
 
 
 class DigestGenerator:
@@ -35,7 +46,7 @@ class DigestGenerator:
     def get_top_signal(self, content_list: list[Content]) -> Optional[Content]:
         scored = []
         for item in content_list:
-            signals = item.investment_signals or {}
+            signals = _parse_json(item.investment_signals)
             score = signals.get("relevance_score", 0)
             if score >= 7:  # Only consider high-relevance items
                 scored.append((score, item))
@@ -58,8 +69,8 @@ class DigestGenerator:
         technical_categories = {Category.TECHNICAL}
 
         for item in content_list:
-            categories = set(item.categories or [])
-            signals = item.investment_signals or {}
+            categories = set(_parse_json(item.categories, []))
+            signals = _parse_json(item.investment_signals)
             relevance = signals.get("relevance_score", 0)
 
             if categories & investment_categories or relevance >= 8:
@@ -150,13 +161,13 @@ class DigestGenerator:
         with SessionLocal() as session:
             digest = Digest(
                 date=digest_data["date"],
-                content_ids=content_ids,
+                content_ids=json.dumps(content_ids),
                 top_signal=(
-                    {
+                    json.dumps({
                         "id": digest_data["top_signal"].id,
                         "title": digest_data["top_signal"].title,
                         "summary": digest_data["top_signal"].summary,
-                    }
+                    })
                     if digest_data["top_signal"]
                     else None
                 ),

@@ -1,9 +1,15 @@
+import json
 from datetime import datetime, timezone
 from typing import Optional
 
 import structlog
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+
+try:
+    from googleapiclient.discovery import build
+    from googleapiclient.errors import HttpError
+except ImportError:
+    build = None
+    HttpError = Exception
 
 from src.config import settings
 from src.storage import Content, ContentType, SessionLocal
@@ -14,7 +20,7 @@ logger = structlog.get_logger()
 class YouTubeCollector:
     def __init__(self):
         self.youtube = None
-        if settings.youtube_api_key:
+        if build and settings.youtube_api_key:
             self.youtube = build("youtube", "v3", developerKey=settings.youtube_api_key)
 
     def get_channel_uploads(self, channel_id: str, max_results: int = 10) -> list[dict]:
@@ -115,11 +121,11 @@ class YouTubeCollector:
                     publish_date=publish_date,
                     raw_content=snippet.get("description", ""),
                     duration_seconds=duration_seconds,
-                    entities={
+                    entities=json.dumps({
                         "video_id": video_id,
                         "channel_id": channel_id,
                         "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url"),
-                    },
+                    }),
                     processed=False,
                 )
 

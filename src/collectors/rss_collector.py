@@ -1,4 +1,4 @@
-import hashlib
+import json
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -95,7 +95,7 @@ class RSSCollector:
                 if content_type == ContentType.PODCAST:
                     audio_url = self.get_audio_url(entry)
                     if audio_url:
-                        content.entities = {"audio_url": audio_url}
+                        content.entities = json.dumps({"audio_url": audio_url})
 
                 session.add(content)
                 collected.append(content)

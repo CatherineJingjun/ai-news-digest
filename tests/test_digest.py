@@ -1,3 +1,4 @@
+import json
 import pytest
 from unittest.mock import Mock, MagicMock
 from datetime import datetime, timezone
@@ -26,13 +27,13 @@ class TestDigestGenerator:
         generator = DigestGenerator()
         
         content1 = Mock()
-        content1.investment_signals = {"relevance_score": 5}
+        content1.investment_signals = json.dumps({"relevance_score": 5})
         
         content2 = Mock()
-        content2.investment_signals = {"relevance_score": 9}
+        content2.investment_signals = json.dumps({"relevance_score": 9})
         
         content3 = Mock()
-        content3.investment_signals = {"relevance_score": 7}
+        content3.investment_signals = json.dumps({"relevance_score": 7})
         
         result = generator.get_top_signal([content1, content2, content3])
         assert result == content2
@@ -41,10 +42,10 @@ class TestDigestGenerator:
         generator = DigestGenerator()
         
         content1 = Mock()
-        content1.investment_signals = {"relevance_score": 3}
+        content1.investment_signals = json.dumps({"relevance_score": 3})
         
         content2 = Mock()
-        content2.investment_signals = {"relevance_score": 5}
+        content2.investment_signals = json.dumps({"relevance_score": 5})
         
         result = generator.get_top_signal([content1, content2])
         assert result is None
@@ -53,23 +54,23 @@ class TestDigestGenerator:
         generator = DigestGenerator()
         
         funding_content = Mock()
-        funding_content.categories = ["funding"]
-        funding_content.investment_signals = {"relevance_score": 6}
+        funding_content.categories = json.dumps(["funding"])
+        funding_content.investment_signals = json.dumps({"relevance_score": 6})
         funding_content.content_type = ContentType.ARTICLE
         
         trend_content = Mock()
-        trend_content.categories = ["trend"]
-        trend_content.investment_signals = {"relevance_score": 5}
+        trend_content.categories = json.dumps(["trend"])
+        trend_content.investment_signals = json.dumps({"relevance_score": 5})
         trend_content.content_type = ContentType.ARTICLE
         
         technical_content = Mock()
-        technical_content.categories = ["technical"]
-        technical_content.investment_signals = {"relevance_score": 4}
+        technical_content.categories = json.dumps(["technical"])
+        technical_content.investment_signals = json.dumps({"relevance_score": 4})
         technical_content.content_type = ContentType.ARTICLE
         
         podcast_content = Mock()
-        podcast_content.categories = ["trend"]
-        podcast_content.investment_signals = {"relevance_score": 8}
+        podcast_content.categories = json.dumps(["trend"])
+        podcast_content.investment_signals = json.dumps({"relevance_score": 8})
         podcast_content.content_type = ContentType.PODCAST
         
         content_list = [funding_content, trend_content, technical_content, podcast_content]

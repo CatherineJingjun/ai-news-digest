@@ -8,16 +8,18 @@ from src.storage import Digest, SessionLocal
 
 logger = structlog.get_logger()
 
+try:
+    from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Mail, Email, To, Content as SGContent
+except ImportError:
+    SendGridAPIClient = None
+
 
 class EmailSender:
     def __init__(self):
         self.sg_client = None
-        if settings.sendgrid_api_key:
-            try:
-                from sendgrid import SendGridAPIClient
-                self.sg_client = SendGridAPIClient(settings.sendgrid_api_key)
-            except ImportError:
-                logger.warning("sendgrid_not_installed")
+        if SendGridAPIClient and settings.sendgrid_api_key:
+            self.sg_client = SendGridAPIClient(settings.sendgrid_api_key)
 
     def send_digest(self, digest: Digest, to_email: Optional[str] = None) -> bool:
         if not self.sg_client:
@@ -28,8 +30,6 @@ class EmailSender:
         if not recipient:
             logger.error("no_recipient_email")
             return False
-
-        from sendgrid.helpers.mail import Mail, Email, To, Content as SGContent
 
         date_str = digest.date.strftime("%B %d, %Y")
         subject = f"AI News Digest - {date_str}"

@@ -2,9 +2,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, Text, func
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import DateTime, Index, String, Text, func, JSON
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -40,9 +39,9 @@ class Content(Base):
     raw_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     transcript: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    categories: Mapped[Optional[list[str]]] = mapped_column(ARRAY(String), nullable=True)
-    entities: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
-    investment_signals: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    categories: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string
+    entities: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string
+    investment_signals: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string
     duration_seconds: Mapped[Optional[int]] = mapped_column(nullable=True)
     processed: Mapped[bool] = mapped_column(default=False)
     included_in_digest: Mapped[bool] = mapped_column(default=False)
@@ -71,7 +70,7 @@ class Conference(Base):
         DateTime(timezone=True), nullable=True
     )
     quarter: Mapped[str] = mapped_column(String(10))  # e.g., "Q1 2025"
-    highlights: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    highlights: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (Index("ix_conferences_start_date", "start_date"),)
@@ -82,8 +81,8 @@ class Digest(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), unique=True)
-    content_ids: Mapped[list[int]] = mapped_column(ARRAY(String))
-    top_signal: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    content_ids: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string
+    top_signal: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string
     html_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     sent: Mapped[bool] = mapped_column(default=False)
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -95,8 +94,8 @@ class UserPreferences(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
-    focus_areas: Mapped[Optional[list[str]]] = mapped_column(ARRAY(String), nullable=True)
-    stage_preferences: Mapped[Optional[list[str]]] = mapped_column(ARRAY(String), nullable=True)
+    focus_areas: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string
+    stage_preferences: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string
     geography: Mapped[str] = mapped_column(String(50), default="US")
     active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

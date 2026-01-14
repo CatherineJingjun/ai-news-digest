@@ -5,8 +5,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # Database
-    database_url: str = Field(default="postgresql://localhost:5432/ai_news_digest")
+    # Database (SQLite by default, use postgresql:// for production)
+    database_url: str = Field(default="sqlite:///ai_news_digest.db")
 
     # API Keys
     anthropic_api_key: str = Field(default="")

@@ -1,8 +1,12 @@
 import json
 from typing import Optional
 
-import anthropic
 import structlog
+
+try:
+    import anthropic
+except ImportError:
+    anthropic = None
 
 from src.config import settings
 from src.storage import Category, Content, ContentType, SessionLocal
@@ -109,7 +113,7 @@ Respond in JSON format:
 class ContentSummarizer:
     def __init__(self):
         self.client = None
-        if settings.anthropic_api_key:
+        if anthropic and settings.anthropic_api_key:
             self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
     def _get_prompt(self, content: Content) -> str:
@@ -192,21 +196,21 @@ class ContentSummarizer:
                 summary = "\n".join(f"• {item}" for item in summary)
             db_content.summary = summary
 
-            # Extract categories
+            # Extract categories (store as JSON string)
             categories = result.get("categories", [])
-            db_content.categories = categories
+            db_content.categories = json.dumps(categories)
 
-            # Store entities
-            entities = db_content.entities or {}
-            entities.update(result.get("entities", {}))
+            # Store entities (as JSON string)
+            existing_entities = json.loads(db_content.entities) if db_content.entities else {}
+            existing_entities.update(result.get("entities", {}))
             if result.get("key_timestamps"):
-                entities["key_timestamps"] = result["key_timestamps"]
+                existing_entities["key_timestamps"] = result["key_timestamps"]
             if result.get("content_type"):
-                entities["video_type"] = result["content_type"]
-            db_content.entities = entities
+                existing_entities["video_type"] = result["content_type"]
+            db_content.entities = json.dumps(existing_entities)
 
-            # Store investment signals
-            db_content.investment_signals = result.get("investment_signals", {})
+            # Store investment signals (as JSON string)
+            db_content.investment_signals = json.dumps(result.get("investment_signals", {}))
 
             db_content.processed = True
             session.commit()
