@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investor Content OS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #242438;
+            --border: #374151;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Layout */
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 240px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 1rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .main-content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 1.5rem;
+            max-width: calc(100vw - 240px);
+        }
+        
+        /* Sidebar */
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+        }
+        .nav-section { margin-bottom: 1.5rem; }
+        .nav-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            padding: 0 0.5rem;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .nav-item.active { border-left: 2px solid var(--accent); }
+        .nav-badge {
+            margin-left: auto;
+            background: var(--bg-card);
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        
+        /* Search */
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.6rem 0.75rem 0.6rem 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+        .search-icon {
+            position: absolute;
+            left: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+        .search-results.show { display: block; }
+        .search-result-item {
+            padding: 0.6rem 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+        .search-result-item:hover { background: var(--bg-secondary); }
+        .search-result-item:last-child { border-bottom: none; }
+        .search-result-type {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-title { font-size: 1.5rem; font-weight: 600; }
+        .page-subtitle { color: var(--text-secondary); font-size: 0.9rem; }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg-secondary); }
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.15s;
+        }
+        .card:hover { border-color: var(--accent); }
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            line-height: 1.4;
+        }
+        .card-title a { color: var(--text-primary); text-decoration: none; }
+        .card-title a:hover { color: var(--accent); }
+        .card-meta {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        .card-summary {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* Tags */
+        .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+        .tag {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .tag-theme { background: #1e3a5f; color: #60a5fa; }
+        .tag-company { background: #3f2d5c; color: #c4b5fd; }
+        .tag-add {
+            background: transparent;
+            border: 1px dashed var(--border);
+            color: var(--text-secondary);
+        }
+        .tag-add:hover { border-color: var(--accent); color: var(--accent); }
+        .tag-remove { margin-left: 0.3rem; opacity: 0.7; }
+        .tag-remove:hover { opacity: 1; }
+        
+        /* Type Badge */
+        .type-badge {
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .type-article { background: #1e40af; color: #93c5fd; }
+        .type-podcast { background: #7c3aed; color: #c4b5fd; }
+        .type-video { background: #dc2626; color: #fca5a5; }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .status-watch { background: #374151; color: #9ca3af; }
+        .status-diligence { background: #1e3a5f; color: #60a5fa; }
+        .status-pass { background: #3f1f1f; color: #fca5a5; }
+        .status-invest { background: #1f3f2a; color: #6ee7b7; }
+        
+        /* Stage Badge (Leads) */
+        .stage-badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .stage-new { background: #374151; color: #d1d5db; }
+        .stage-contacted { background: #1e3a5f; color: #60a5fa; }
+        .stage-meeting { background: #3f2d5c; color: #c4b5fd; }
+        .stage-diligence { background: #2d3f2d; color: #86efac; }
+        .stage-done { background: #1f3f2a; color: #6ee7b7; }
+        
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 0.4rem 0.8rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        /* Grid */
+        .grid { display: grid; gap: 1rem; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        
+        /* Table */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        tr:hover { background: var(--bg-secondary); }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title { font-weight: 600; }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .modal-body { padding: 1rem; }
+        .modal-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        
+        /* Form */
+        .form-group { margin-bottom: 1rem; }
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .form-textarea { min-height: 100px; resize: vertical; }
+        
+        /* Pipeline Board */
+        .pipeline-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            overflow-x: auto;
+        }
+        .pipeline-column {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-width: 200px;
+        }
+        .pipeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .pipeline-title { font-size: 0.85rem; font-weight: 500; }
+        .pipeline-count {
+            background: var(--bg-card);
+            padding: 0.15rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        .pipeline-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+        .pipeline-card:hover { border-color: var(--accent); }
+        .pipeline-card-title { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem; }
+        .pipeline-card-meta { font-size: 0.7rem; color: var(--text-secondary); }
+        
+        /* Detail Page */
+        .detail-header { margin-bottom: 1.5rem; }
+        .detail-title { font-size: 1.75rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .detail-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        .detail-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        /* Actions Panel */
+        .actions-panel {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+        .action-btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            justify-content: center;
+        }
+        .action-output {
+            background: var(--bg-primary);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+        .empty-state-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        
+        /* Hidden */
+        .hidden { display: none !important; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; padding: 0.5rem; }
+            .sidebar .nav-label, .sidebar .logo span, .sidebar .nav-item span:not(.nav-badge) { display: none; }
+            .main-content { margin-left: 60px; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .pipeline-board { grid-template-columns: repeat(5, 250px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">📊 <span>Investor OS</span></div>
+            
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Search..." id="globalSearch">
+                <div class="search-results" id="searchResults"></div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-label">Content</div>
+                <a class="nav-item active" data-page="feed">📰 <span>Feed</span></a>
+                <a class="nav-item" data-page="themes">🏷️ <span>Themes</span> <span class="nav-badge" id="themeCount">0</span></a>
+                <a class="nav-item" data-page="companies">🏢 <span>Companies</span> <span class="nav-badge" id="companyCount">0</span></a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-label">Pipeline</div>
+                <a class="nav-item" data-page="leads">💼 <span>Leads</span> <span class="nav-badge" id="leadCount">0</span></a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-label">System</div>
+                <a class="nav-item" data-page="settings">⚙️ <span>Settings</span></a>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Feed Page -->
+            <div id="page-feed" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Content Feed</h1>
+                        <p class="page-subtitle">Latest news and podcasts</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="refreshFeed()">↻ Refresh</button>
+                </div>
+                
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="article">Articles</button>
+                    <button class="filter-btn" data-filter="podcast">Podcasts</button>
+                </div>
+                
+                <div id="feedList" class="feed-list">
+                    <div class="loading"><span class="spinner"></span><br>Loading...</div>
+                </div>
+            </div>
+            
+            <!-- Themes Page -->
+            <div id="page-themes" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Themes</h1>
+                        <p class="page-subtitle">Investment themes and trends</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showCreateThemeModal()">+ New Theme</button>
+                </div>
+                <div id="themesList" class="grid grid-3"></div>
+            </div>
+            
+            <!-- Theme Detail Page -->
+            <div id="page-theme-detail" class="page hidden">
+                <div id="themeDetail"></div>
+            </div>
+            
+            <!-- Companies Page -->
+            <div id="page-companies" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Companies</h1>
+                        <p class="page-subtitle">Track companies in your universe</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showCreateCompanyModal()">+ New Company</button>
+                </div>
+                <div class="filters">
+                    <button class="filter-btn active" data-company-filter="all">All</button>
+                    <button class="filter-btn" data-company-filter="Watch">Watch</button>
+                    <button class="filter-btn" data-company-filter="Diligence">Diligence</button>
+                    <button class="filter-btn" data-company-filter="Invest">Invest</button>
+                    <button class="filter-btn" data-company-filter="Pass">Pass</button>
+                </div>
+                <div id="companiesList" class="grid grid-4"></div>
+            </div>
+            
+            <!-- Company Detail Page -->
+            <div id="page-company-detail" class="page hidden">
+                <div id="companyDetail"></div>
+            </div>
+            
+            <!-- Leads Page -->
+            <div id="page-leads" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Leads Pipeline</h1>
+                        <p class="page-subtitle">Track investment opportunities</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showCreateLeadModal()">+ New Lead</button>
+                </div>
+                <div id="leadsPipeline" class="pipeline-board"></div>
+            </div>
+            
+            <!-- Lead Detail Page -->
+            <div id="page-lead-detail" class="page hidden">
+                <div id="leadDetail"></div>
+            </div>
+            
+            <!-- Settings Page -->
+            <div id="page-settings" class="page hidden">
+                <div class="page-header">
+                    <h1 class="page-title">Settings</h1>
+                </div>
+                <div class="grid grid-2">
+                    <div class="detail-section">
+                        <div class="detail-section-title">Content Sources</div>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+                            RSS feeds are configured in the backend. Current sources:
+                        </p>
+                        <ul style="list-style: none; font-size: 0.85rem;">
+                            <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border);">📰 TechCrunch Startups</li>
+                            <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border);">🎙️ a16z Podcast</li>
+                            <li style="padding: 0.4rem 0;">🎙️ 20VC Podcast</li>
+                        </ul>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-section-title">Statistics</div>
+                        <div id="statsPanel"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Tag Modal -->
+    <div class="modal-overlay" id="tagModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">Add Tags</span>
+                <button class="modal-close" onclick="closeTagModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Themes</label>
+                    <div id="themeTagOptions" class="tags" style="margin-top: 0;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Companies</label>
+                    <div id="companyTagOptions" class="tags" style="margin-top: 0;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Create New</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" class="form-input" id="newTagName" placeholder="Name...">
+                        <button class="btn btn-secondary" onclick="createThemeFromModal()">+ Theme</button>
+                        <button class="btn btn-secondary" onclick="createCompanyFromModal()">+ Company</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Theme Modal -->
+    <div class="modal-overlay" id="createThemeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">Create Theme</span>
+                <button class="modal-close" onclick="closeModal('createThemeModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" id="newThemeName">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="newThemeDesc"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createThemeModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createTheme()">Create</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Company Modal -->
+    <div class="modal-overlay" id="createCompanyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">Create Company</span>
+                <button class="modal-close" onclick="closeModal('createCompanyModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" id="newCompanyName">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website</label>
+                    <input type="text" class="form-input" id="newCompanyWebsite" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="newCompanyStatus">
+                        <option value="Watch">Watch</option>
+                        <option value="Diligence">Diligence</option>
+                        <option value="Invest">Invest</option>
+                        <option value="Pass">Pass</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createCompanyModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createCompany()">Create</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Lead Modal -->
+    <div class="modal-overlay" id="createLeadModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">Create Lead</span>
+                <button class="modal-close" onclick="closeModal('createLeadModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Company</label>
+                    <select class="form-select" id="newLeadCompany"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Why Now?</label>
+                    <textarea class="form-textarea" id="newLeadWhyNow" placeholder="What triggered this opportunity..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createLeadModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createLead()">Create Lead</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentPage = 'feed';
+        let currentFilter = 'all';
+        let currentCompanyFilter = 'all';
+        let allThemes = [];
+        let allCompanies = [];
+        let currentTagContentId = null;
+        
+        // API
+        const api = {
+            get: async (endpoint) => {
+                const res = await fetch(`/api${endpoint}`);
+                return res.json();
+            },
+            post: async (endpoint, data) => {
+                const res = await fetch(`/api${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return res.json();
+            },
+            delete: async (endpoint) => {
+                const res = await fetch(`/api${endpoint}`, { method: 'DELETE' });
+                return res.json();
+            }
+        };
+        
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const page = item.dataset.page;
+                if (page) navigateTo(page);
+            });
+        });
+        
+        function navigateTo(page, params = {}) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector(`[data-page="${page.split('-')[0]}"]`)?.classList.add('active');
+            
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`page-${page}`)?.classList.remove('hidden');
+            
+            currentPage = page;
+            
+            if (page === 'feed') loadFeed();
+            else if (page === 'themes') loadThemes();
+            else if (page === 'theme-detail') loadThemeDetail(params.id);
+            else if (page === 'companies') loadCompanies();
+            else if (page === 'company-detail') loadCompanyDetail(params.id);
+            else if (page === 'leads') loadLeads();
+            else if (page === 'lead-detail') loadLeadDetail(params.id);
+            else if (page === 'settings') loadSettings();
+        }
+        
+        // Feed
+        async function loadFeed() {
+            const data = await api.get(`/feed?filter=${currentFilter}`);
+            renderFeed(data.items);
+            updateStats();
+        }
+        
+        function renderFeed(items) {
+            const container = document.getElementById('feedList');
+            if (!items.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>No content found</div>';
+                return;
+            }
+            
+            container.innerHTML = items.map(item => `
+                <div class="card">
+                    <div class="card-meta">
+                        <span class="type-badge type-${item.type}">${item.type}</span>
+                        <span>${item.source}</span>
+                        <span>${item.date}</span>
+                    </div>
+                    <div class="card-title"><a href="${item.url}" target="_blank">${item.title}</a></div>
+                    ${item.summary ? `<div class="card-summary">${item.summary}</div>` : ''}
+                    <div class="tags">
+                        ${item.themes.map(t => `<span class="tag tag-theme" onclick="navigateTo('theme-detail', {id: ${t.id}})">${t.name}<span class="tag-remove" onclick="event.stopPropagation(); removeThemeTag(${item.id}, ${t.id})">×</span></span>`).join('')}
+                        ${item.companies.map(c => `<span class="tag tag-company" onclick="navigateTo('company-detail', {id: ${c.id}})">${c.name}<span class="tag-remove" onclick="event.stopPropagation(); removeCompanyTag(${item.id}, ${c.id})">×</span></span>`).join('')}
+                        <span class="tag tag-add" onclick="showTagModal(${item.id})">+ Tag</span>
+                        <span class="tag tag-add" onclick="createLeadFromContent(${item.id}, '${item.title.replace(/'/g, "\\'")}')">+ Lead</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function refreshFeed() {
+            loadFeed();
+        }
+        
+        // Filters
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                loadFeed();
+            });
+        });
+        
+        document.querySelectorAll('.filter-btn[data-company-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn[data-company-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCompanyFilter = btn.dataset.companyFilter;
+                loadCompanies();
+            });
+        });
+        
+        // Themes
+        async function loadThemes() {
+            allThemes = await api.get('/themes');
+            document.getElementById('themeCount').textContent = allThemes.length;
+            
+            const container = document.getElementById('themesList');
+            container.innerHTML = allThemes.map(t => `
+                <div class="card" onclick="navigateTo('theme-detail', {id: ${t.id}})" style="cursor: pointer;">
+                    <div class="card-title">${t.name}</div>
+                    <div class="card-meta"><span>${t.content_count} items</span></div>
+                    ${t.description ? `<div class="card-summary">${t.description}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        async function loadThemeDetail(id) {
+            const theme = await api.get(`/themes/${id}`);
+            document.getElementById('themeDetail').innerHTML = `
+                <a onclick="navigateTo('themes')" style="color: var(--accent); cursor: pointer; font-size: 0.85rem;">← Back to Themes</a>
+                <div class="detail-header" style="margin-top: 1rem;">
+                    <h1 class="detail-title">${theme.name}</h1>
+                    <p style="color: var(--text-secondary);">${theme.description || ''}</p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">${theme.content_count} items tagged</p>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-section-title">Tagged Content</div>
+                    ${theme.items.map(item => `
+                        <div style="padding: 0.6rem 0; border-bottom: 1px solid var(--border);">
+                            <span class="type-badge type-${item.type}" style="margin-right: 0.5rem;">${item.type}</span>
+                            <a href="${item.url}" target="_blank" style="color: var(--text-primary);">${item.title}</a>
+                            <span style="color: var(--text-secondary); font-size: 0.8rem; margin-left: 0.5rem;">${item.date}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function showCreateThemeModal() {
+            document.getElementById('newThemeName').value = '';
+            document.getElementById('newThemeDesc').value = '';
+            document.getElementById('createThemeModal').classList.add('show');
+        }
+        
+        async function createTheme() {
+            const name = document.getElementById('newThemeName').value.trim();
+            const desc = document.getElementById('newThemeDesc').value.trim();
+            if (!name) return;
+            
+            await api.post('/themes', { name, description: desc });
+            closeModal('createThemeModal');
+            loadThemes();
+        }
+        
+        // Companies
+        async function loadCompanies() {
+            allCompanies = await api.get('/companies');
+            document.getElementById('companyCount').textContent = allCompanies.length;
+            
+            let filtered = allCompanies;
+            if (currentCompanyFilter !== 'all') {
+                filtered = allCompanies.filter(c => c.status === currentCompanyFilter);
+            }
+            
+            const container = document.getElementById('companiesList');
+            container.innerHTML = filtered.map(c => `
+                <div class="card" onclick="navigateTo('company-detail', {id: ${c.id}})" style="cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div class="card-title">${c.name}</div>
+                        <span class="status-badge status-${c.status.toLowerCase()}">${c.status}</span>
+                    </div>
+                    <div class="card-meta"><span>${c.content_count} mentions</span><span>${c.lead_count} leads</span></div>
+                </div>
+            `).join('');
+        }
+        
+        async function loadCompanyDetail(id) {
+            const company = await api.get(`/companies/${id}`);
+            document.getElementById('companyDetail').innerHTML = `
+                <a onclick="navigateTo('companies')" style="color: var(--accent); cursor: pointer; font-size: 0.85rem;">← Back to Companies</a>
+                <div class="detail-header" style="margin-top: 1rem; display: flex; justify-content: space-between;">
+                    <div>
+                        <h1 class="detail-title">${company.name}</h1>
+                        ${company.website ? `<a href="${company.website}" target="_blank" style="color: var(--accent); font-size: 0.9rem;">${company.website}</a>` : ''}
+                    </div>
+                    <div>
+                        <select class="form-select" style="width: auto;" onchange="updateCompanyStatus(${company.id}, this.value)">
+                            <option value="Watch" ${company.status === 'Watch' ? 'selected' : ''}>Watch</option>
+                            <option value="Diligence" ${company.status === 'Diligence' ? 'selected' : ''}>Diligence</option>
+                            <option value="Invest" ${company.status === 'Invest' ? 'selected' : ''}>Invest</option>
+                            <option value="Pass" ${company.status === 'Pass' ? 'selected' : ''}>Pass</option>
+                        </select>
+                        <button class="btn btn-primary" style="margin-left: 0.5rem;" onclick="createLeadFromCompany(${company.id}, '${company.name}')">+ Create Lead</button>
+                    </div>
+                </div>
+                <div class="grid grid-2">
+                    <div class="detail-section">
+                        <div class="detail-section-title">Notes</div>
+                        <textarea class="form-textarea" id="companyNotes" onblur="updateCompanyNotes(${company.id})">${company.notes || ''}</textarea>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-section-title">Leads (${company.leads.length})</div>
+                        ${company.leads.map(l => `
+                            <div style="padding: 0.5rem 0; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="navigateTo('lead-detail', {id: ${l.id}})">
+                                <span class="stage-badge stage-${l.stage.toLowerCase()}">${l.stage}</span>
+                                <span style="margin-left: 0.5rem; font-size: 0.85rem;">${l.created_at}</span>
+                            </div>
+                        `).join('') || '<p style="color: var(--text-secondary); font-size: 0.85rem;">No leads yet</p>'}
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-section-title">Mentions (${company.content_count})</div>
+                    ${company.items.map(item => `
+                        <div style="padding: 0.6rem 0; border-bottom: 1px solid var(--border);">
+                            <span class="type-badge type-${item.type}">${item.type}</span>
+                            <a href="${item.url}" target="_blank" style="color: var(--text-primary); margin-left: 0.5rem;">${item.title}</a>
+                            <span style="color: var(--text-secondary); font-size: 0.8rem; margin-left: 0.5rem;">${item.date}</span>
+                        </div>
+                    `).join('') || '<p style="color: var(--text-secondary); font-size: 0.85rem;">No mentions yet</p>'}
+                </div>
+            `;
+        }
+        
+        function showCreateCompanyModal() {
+            document.getElementById('newCompanyName').value = '';
+            document.getElementById('newCompanyWebsite').value = '';
+            document.getElementById('newCompanyStatus').value = 'Watch';
+            document.getElementById('createCompanyModal').classList.add('show');
+        }
+        
+        async function createCompany() {
+            const name = document.getElementById('newCompanyName').value.trim();
+            const website = document.getElementById('newCompanyWebsite').value.trim();
+            const status = document.getElementById('newCompanyStatus').value;
+            if (!name) return;
+            
+            await api.post('/companies', { name, website, status });
+            closeModal('createCompanyModal');
+            loadCompanies();
+        }
+        
+        async function updateCompanyStatus(id, status) {
+            await api.post(`/companies/${id}`, { status });
+        }
+        
+        async function updateCompanyNotes(id) {
+            const notes = document.getElementById('companyNotes').value;
+            await api.post(`/companies/${id}`, { notes });
+        }
+        
+        // Leads
+        async function loadLeads() {
+            const leads = await api.get('/leads');
+            document.getElementById('leadCount').textContent = leads.length;
+            
+            const stages = ['New', 'Contacted', 'Meeting', 'Diligence', 'Done'];
+            const byStage = {};
+            stages.forEach(s => byStage[s] = []);
+            leads.forEach(l => byStage[l.stage]?.push(l));
+            
+            document.getElementById('leadsPipeline').innerHTML = stages.map(stage => `
+                <div class="pipeline-column">
+                    <div class="pipeline-header">
+                        <span class="pipeline-title">${stage}</span>
+                        <span class="pipeline-count">${byStage[stage].length}</span>
+                    </div>
+                    ${byStage[stage].map(l => `
+                        <div class="pipeline-card" onclick="navigateTo('lead-detail', {id: ${l.id}})">
+                            <div class="pipeline-card-title">${l.company?.name || 'Unknown'}</div>
+                            <div class="pipeline-card-meta">${l.created_at}</div>
+                            ${l.why_now ? `<div class="pipeline-card-meta" style="margin-top: 0.3rem;">${l.why_now.substring(0, 50)}...</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+        
+        async function loadLeadDetail(id) {
+            const lead = await api.get(`/leads/${id}`);
+            document.getElementById('leadDetail').innerHTML = `
+                <a onclick="navigateTo('leads')" style="color: var(--accent); cursor: pointer; font-size: 0.85rem;">← Back to Pipeline</a>
+                <div class="detail-header" style="margin-top: 1rem; display: flex; justify-content: space-between;">
+                    <div>
+                        <h1 class="detail-title">${lead.company?.name || 'Lead'}</h1>
+                        <p style="color: var(--text-secondary);">Created ${lead.created_at}</p>
+                    </div>
+                    <select class="form-select" style="width: auto; height: fit-content;" onchange="updateLeadStage(${lead.id}, this.value)">
+                        <option value="New" ${lead.stage === 'New' ? 'selected' : ''}>New</option>
+                        <option value="Contacted" ${lead.stage === 'Contacted' ? 'selected' : ''}>Contacted</option>
+                        <option value="Meeting" ${lead.stage === 'Meeting' ? 'selected' : ''}>Meeting</option>
+                        <option value="Diligence" ${lead.stage === 'Diligence' ? 'selected' : ''}>Diligence</option>
+                        <option value="Done" ${lead.stage === 'Done' ? 'selected' : ''}>Done</option>
+                    </select>
+                </div>
+                <div class="grid grid-2">
+                    <div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">Why Now?</div>
+                            <textarea class="form-textarea" id="leadWhyNow" onblur="updateLeadWhyNow(${lead.id})">${lead.why_now || ''}</textarea>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">Notes</div>
+                            <textarea class="form-textarea" id="leadNotes" onblur="updateLeadNotes(${lead.id})">${lead.owner_note || ''}</textarea>
+                        </div>
+                        ${lead.source_content ? `
+                        <div class="detail-section">
+                            <div class="detail-section-title">Source</div>
+                            <a href="${lead.source_content.url}" target="_blank" style="color: var(--accent);">${lead.source_content.title}</a>
+                            ${lead.source_content.summary ? `<p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">${lead.source_content.summary}</p>` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div>
+                        <div class="actions-panel">
+                            <div class="detail-section-title">AI Actions</div>
+                            <button class="btn btn-primary action-btn" onclick="generateQuestions(${lead.id})">🔍 Generate Diligence Questions</button>
+                            <button class="btn btn-secondary action-btn" onclick="generateOutreach(${lead.id})">✉️ Draft Outreach</button>
+                            <div id="actionOutput"></div>
+                        </div>
+                        ${lead.actions.length ? `
+                        <div class="detail-section" style="margin-top: 1rem;">
+                            <div class="detail-section-title">Previous Actions</div>
+                            ${lead.actions.map(a => `
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                                        <span class="type-badge type-article">${a.type}</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.75rem;">${a.created_at}</span>
+                                    </div>
+                                    <div class="action-output" style="margin-top: 0.5rem; font-size: 0.8rem;">${a.content}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showCreateLeadModal() {
+            const select = document.getElementById('newLeadCompany');
+            select.innerHTML = allCompanies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            document.getElementById('newLeadWhyNow').value = '';
+            document.getElementById('createLeadModal').classList.add('show');
+        }
+        
+        async function createLead() {
+            const companyId = document.getElementById('newLeadCompany').value;
+            const whyNow = document.getElementById('newLeadWhyNow').value.trim();
+            
+            await api.post('/leads', { company_id: parseInt(companyId), why_now: whyNow });
+            closeModal('createLeadModal');
+            loadLeads();
+        }
+        
+        async function createLeadFromContent(contentId, title) {
+            const companyName = prompt('Company name for this lead:', '');
+            if (!companyName) return;
+            
+            // Create or get company
+            const companyRes = await api.post('/companies', { name: companyName });
+            const companyId = companyRes.id;
+            
+            // Create lead
+            await api.post('/leads', {
+                company_id: companyId,
+                content_id: contentId,
+                why_now: `From: ${title}`
+            });
+            
+            alert('Lead created!');
+            loadLeads();
+        }
+        
+        async function createLeadFromCompany(companyId, companyName) {
+            const whyNow = prompt('Why now? (optional)', '');
+            await api.post('/leads', { company_id: companyId, why_now: whyNow });
+            alert('Lead created!');
+            loadCompanyDetail(companyId);
+        }
+        
+        async function updateLeadStage(id, stage) {
+            await api.post(`/leads/${id}`, { stage });
+        }
+        
+        async function updateLeadWhyNow(id) {
+            const whyNow = document.getElementById('leadWhyNow').value;
+            await api.post(`/leads/${id}`, { why_now: whyNow });
+        }
+        
+        async function updateLeadNotes(id) {
+            const notes = document.getElementById('leadNotes').value;
+            await api.post(`/leads/${id}`, { owner_note: notes });
+        }
+        
+        async function generateQuestions(leadId) {
+            document.getElementById('actionOutput').innerHTML = '<div class="loading"><span class="spinner"></span> Generating...</div>';
+            const result = await api.post(`/leads/${leadId}/questions`, {});
+            document.getElementById('actionOutput').innerHTML = `<div class="action-output">${result.content}</div>`;
+        }
+        
+        async function generateOutreach(leadId) {
+            document.getElementById('actionOutput').innerHTML = '<div class="loading"><span class="spinner"></span> Generating...</div>';
+            const result = await api.post(`/leads/${leadId}/outreach`, {});
+            document.getElementById('actionOutput').innerHTML = `<div class="action-output">${result.content}</div>`;
+        }
+        
+        // Tagging
+        async function showTagModal(contentId) {
+            currentTagContentId = contentId;
+            
+            // Load current tags
+            const content = await api.get(`/content/${contentId}`);
+            const currentThemeIds = content.themes.map(t => t.id);
+            const currentCompanyIds = content.companies.map(c => c.id);
+            
+            // Render theme options
+            document.getElementById('themeTagOptions').innerHTML = allThemes.map(t => `
+                <span class="tag tag-theme ${currentThemeIds.includes(t.id) ? 'active' : ''}" 
+                      style="${currentThemeIds.includes(t.id) ? 'opacity: 1; border: 1px solid var(--accent);' : 'opacity: 0.6;'}"
+                      onclick="toggleThemeTag(${contentId}, ${t.id}, this)">${t.name}</span>
+            `).join('');
+            
+            // Render company options
+            document.getElementById('companyTagOptions').innerHTML = allCompanies.map(c => `
+                <span class="tag tag-company ${currentCompanyIds.includes(c.id) ? 'active' : ''}"
+                      style="${currentCompanyIds.includes(c.id) ? 'opacity: 1; border: 1px solid var(--accent);' : 'opacity: 0.6;'}"
+                      onclick="toggleCompanyTag(${contentId}, ${c.id}, this)">${c.name}</span>
+            `).join('');
+            
+            document.getElementById('tagModal').classList.add('show');
+        }
+        
+        function closeTagModal() {
+            document.getElementById('tagModal').classList.remove('show');
+            currentTagContentId = null;
+            loadFeed();
+        }
+        
+        async function toggleThemeTag(contentId, themeId, el) {
+            if (el.classList.contains('active')) {
+                await api.delete(`/content/${contentId}/themes/${themeId}`);
+                el.classList.remove('active');
+                el.style.opacity = '0.6';
+                el.style.border = 'none';
+            } else {
+                await api.post(`/content/${contentId}/themes/${themeId}`, {});
+                el.classList.add('active');
+                el.style.opacity = '1';
+                el.style.border = '1px solid var(--accent)';
+            }
+        }
+        
+        async function toggleCompanyTag(contentId, companyId, el) {
+            if (el.classList.contains('active')) {
+                await api.delete(`/content/${contentId}/companies/${companyId}`);
+                el.classList.remove('active');
+                el.style.opacity = '0.6';
+                el.style.border = 'none';
+            } else {
+                await api.post(`/content/${contentId}/companies/${companyId}`, {});
+                el.classList.add('active');
+                el.style.opacity = '1';
+                el.style.border = '1px solid var(--accent)';
+            }
+        }
+        
+        async function removeThemeTag(contentId, themeId) {
+            await api.delete(`/content/${contentId}/themes/${themeId}`);
+            loadFeed();
+        }
+        
+        async function removeCompanyTag(contentId, companyId) {
+            await api.delete(`/content/${contentId}/companies/${companyId}`);
+            loadFeed();
+        }
+        
+        async function createThemeFromModal() {
+            const name = document.getElementById('newTagName').value.trim();
+            if (!name) return;
+            
+            const result = await api.post('/themes', { name });
+            document.getElementById('newTagName').value = '';
+            
+            // Refresh and re-show modal
+            await loadThemes();
+            showTagModal(currentTagContentId);
+        }
+        
+        async function createCompanyFromModal() {
+            const name = document.getElementById('newTagName').value.trim();
+            if (!name) return;
+            
+            const result = await api.post('/companies', { name });
+            document.getElementById('newTagName').value = '';
+            
+            // Refresh and re-show modal
+            await loadCompanies();
+            showTagModal(currentTagContentId);
+        }
+        
+        // Search
+        const searchInput = document.getElementById('globalSearch');
+        const searchResults = document.getElementById('searchResults');
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                const query = searchInput.value.trim();
+                if (query.length < 2) {
+                    searchResults.classList.remove('show');
+                    return;
+                }
+                
+                const data = await api.get(`/search?q=${encodeURIComponent(query)}`);
+                
+                if (data.results.length) {
+                    searchResults.innerHTML = data.results.map(r => `
+                        <div class="search-result-item" onclick="handleSearchResult('${r.type}', ${r.id})">
+                            <div class="search-result-type">${r.type}</div>
+                            <div>${r.title}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${r.subtitle}</div>
+                        </div>
+                    `).join('');
+                    searchResults.classList.add('show');
+                } else {
+                    searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+                    searchResults.classList.add('show');
+                }
+            }, 300);
+        });
+        
+        searchInput.addEventListener('blur', () => {
+            setTimeout(() => searchResults.classList.remove('show'), 200);
+        });
+        
+        function handleSearchResult(type, id) {
+            searchInput.value = '';
+            searchResults.classList.remove('show');
+            
+            if (type === 'content') navigateTo('feed');
+            else if (type === 'theme') navigateTo('theme-detail', { id });
+            else if (type === 'company') navigateTo('company-detail', { id });
+            else if (type === 'lead') navigateTo('lead-detail', { id });
+        }
+        
+        // Settings
+        async function loadSettings() {
+            const stats = await api.get('/stats');
+            document.getElementById('statsPanel').innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                    <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 1.5rem; font-weight: 600;">${stats.content}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Total Content</div>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 1.5rem; font-weight: 600;">${stats.tagged}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Tagged Items</div>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 1.5rem; font-weight: 600;">${stats.themes}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Themes</div>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 1.5rem; font-weight: 600;">${stats.companies}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Companies</div>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 1.5rem; font-weight: 600;">${stats.leads}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Leads</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function updateStats() {
+            const stats = await api.get('/stats');
+            document.getElementById('themeCount').textContent = stats.themes;
+            document.getElementById('companyCount').textContent = stats.companies;
+            document.getElementById('leadCount').textContent = stats.leads;
+        }
+        
+        // Modal helpers
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+        
+        // Initialize
+        async function init() {
+            await Promise.all([loadThemes(), loadCompanies()]);
+            loadFeed();
+        }
+        
+        init();
+    </script>
+</body>
+</html>

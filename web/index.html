@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News Digest</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e4e4e7;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #374151;
+        }
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle { color: #9ca3af; font-size: 1.1rem; }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .stat {
+            background: rgba(255,255,255,0.05);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #374151;
+            background: transparent;
+            color: #9ca3af;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+        .news-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+        .news-item:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+        .news-item h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        .news-item h3 a {
+            color: #e4e4e7;
+            text-decoration: none;
+        }
+        .news-item h3 a:hover { color: #60a5fa; }
+        .meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 0.75rem;
+        }
+        .type-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .type-article { background: #1e40af; color: #93c5fd; }
+        .type-podcast { background: #7c3aed; color: #c4b5fd; }
+        .type-video { background: #dc2626; color: #fca5a5; }
+        .summary {
+            color: #9ca3af;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .refresh-btn:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI News Digest</h1>
+            <p class="subtitle">Enterprise AI Investment Intelligence</p>
+            <div class="stats">
+                <span class="stat" id="articleCount">0 articles</span>
+                <span class="stat" id="podcastCount">0 podcasts</span>
+                <span class="stat" id="lastUpdated">Loading...</span>
+            </div>
+        </header>
+
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="article">Articles</button>
+            <button class="filter-btn" data-filter="podcast">Podcasts</button>
+            <button class="refresh-btn" onclick="loadNews()">Refresh</button>
+        </div>
+
+        <div id="newsList" class="news-list">
+            <div class="loading">Loading news...</div>
+        </div>
+    </div>
+
+    <script>
+        let allNews = [];
+        let currentFilter = 'all';
+
+        async function loadNews() {
+            try {
+                const response = await fetch('/api/news');
+                const data = await response.json();
+                allNews = data.items;
+                
+                document.getElementById('articleCount').textContent = `${data.counts.articles} articles`;
+                document.getElementById('podcastCount').textContent = `${data.counts.podcasts} podcasts`;
+                document.getElementById('lastUpdated').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+                
+                renderNews();
+            } catch (error) {
+                document.getElementById('newsList').innerHTML = '<div class="loading">Error loading news. Make sure the server is running.</div>';
+            }
+        }
+
+        function renderNews() {
+            const filtered = currentFilter === 'all' 
+                ? allNews 
+                : allNews.filter(item => item.type === currentFilter);
+            
+            if (filtered.length === 0) {
+                document.getElementById('newsList').innerHTML = '<div class="loading">No news found.</div>';
+                return;
+            }
+
+            document.getElementById('newsList').innerHTML = filtered.map(item => `
+                <div class="news-item" data-type="${item.type}">
+                    <div class="meta">
+                        <span class="type-badge type-${item.type}">${item.type}</span>
+                        <span>${item.source}</span>
+                        <span>${item.date}</span>
+                    </div>
+                    <h3><a href="${item.url}" target="_blank">${item.title}</a></h3>
+                    ${item.summary ? `<p class="summary">${item.summary}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderNews();
+            });
+        });
+
+        loadNews();
+    </script>
+</body>
+</html>

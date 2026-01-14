@@ -99,3 +99,88 @@ class UserPreferences(Base):
     geography: Mapped[str] = mapped_column(String(50), default="US")
     active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# === Investor Content OS Models ===
+
+class Theme(Base):
+    __tablename__ = "themes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Company(Base):
+    __tablename__ = "companies"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+    website: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), default="Watch")  # Watch, Diligence, Pass, Invest
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class ContentThemeTag(Base):
+    __tablename__ = "content_theme_tags"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content_id: Mapped[int] = mapped_column()
+    theme_id: Mapped[int] = mapped_column()
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_content_theme_content", "content_id"),
+        Index("ix_content_theme_theme", "theme_id"),
+    )
+
+
+class ContentCompanyTag(Base):
+    __tablename__ = "content_company_tags"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content_id: Mapped[int] = mapped_column()
+    company_id: Mapped[int] = mapped_column()
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_content_company_content", "content_id"),
+        Index("ix_content_company_company", "company_id"),
+    )
+
+
+class Lead(Base):
+    __tablename__ = "leads"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    company_id: Mapped[int] = mapped_column()
+    created_from_content_id: Mapped[Optional[int]] = mapped_column(nullable=True)
+    why_now: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    stage: Mapped[str] = mapped_column(String(50), default="New")  # New, Contacted, Meeting, Diligence, Done
+    owner_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_leads_company", "company_id"),
+        Index("ix_leads_stage", "stage"),
+    )
+
+
+class LeadAction(Base):
+    __tablename__ = "lead_actions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lead_id: Mapped[int] = mapped_column()
+    action_type: Mapped[str] = mapped_column(String(50))  # Questions, OutreachDraft, MemoSkeleton
+    content: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (Index("ix_lead_actions_lead", "lead_id"),)
