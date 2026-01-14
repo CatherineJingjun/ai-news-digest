@@ -202,7 +202,7 @@ class ContentOSHandler(SimpleHTTPRequestHandler):
             print(f"  API: {args[0]}")
 
 
-def run_server(port=8000):
+def run_server(port=8080):
     # Initialize database and seed data
     print("\n  Initializing database...")
     init_db()
